@@ -73,12 +73,15 @@ class Seller:
         [print(f'{order_id} {order}', end='\n') for order_id, order in self.orders.items()]
 
     def send_order(self, order_id):
+        if not self.orders.get(order_id, None):
+            return False
         self.orders[order_id].status = 'Отправлен'
+        return True
 
 
-def menu():
+def menu(status):
     cls()
-    if '1' == input('Выберите пользователя:\n 1 - Покупатель \n 2 - Продавец\n'):
+    if status:
         cls()
         print('1 - Посмотреть товары')
         print('2 - Добавить товар в корзину')
@@ -92,6 +95,7 @@ def menu():
         print('8 - Добавить товар')
         print('9 - Удалить товар')
 
+    print('0 - Смена пользователя')
     print('Введите любой символ для выхода')
     key = input('Введите номер функции:')
     cls()
@@ -102,9 +106,13 @@ def main():
     store = Store()
     basket = Basket()
     seller = Seller()
+    menu_status = -1
 
     while 1:
-        match menu():
+        if menu_status == -1:
+            menu_status = int(input('Выберите пользователя:\n 1 - Покупатель \n 0 - Продавец\n'))
+            cls()
+        match menu(menu_status):
             case '1':
                 store.show_products()
                 input('Введите...')
@@ -127,13 +135,16 @@ def main():
                 seller.get_report()
                 input('Введите...')
             case '7':
-                seller.send_order(int(input('Введите номер заказа')))
+                if not seller.send_order(int(input('Введите номер заказа'))):
+                    input('Заказ с таким номером не найден')
             case '8':
                 name, descriptions = input('Введите название и описание через пробел').split(' ')
                 store.add_product(name, descriptions)
                 input('Введите...')
             case '9':
                 store.delete_product(int(input('Введите номер товара')))
+            case '0':
+                menu_status = -1
             case _:
                 break
 
